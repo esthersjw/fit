@@ -1,8 +1,8 @@
 // 身体课表 service worker: keeps the app shell usable offline. Data sync and B站 are always network.
-const CACHE = 'fit-shell-v1'
+const CACHE = 'fit-shell-v2'
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/manifest.webmanifest', '/icons/icon-192.png'])))
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './manifest.webmanifest', './icons/icon-192.png'])))
   self.skipWaiting()
 })
 
@@ -20,10 +20,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then((res) => {
-          caches.open(CACHE).then((c) => c.put('/', res.clone()))
+          caches.open(CACHE).then((c) => c.put('./', res.clone()))
           return res
         })
-        .catch(() => caches.match('/')),
+        .catch(() => caches.match('./')),
     )
     return
   }
