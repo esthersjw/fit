@@ -71,5 +71,10 @@ begin
 end;
 $$;
 
+-- Explicit grants (new Supabase projects may not expose tables by default). RLS above still scopes rows.
+revoke all on public.user_data, public.agent_tokens from anon;
+grant select, insert, update, delete on public.user_data to authenticated;
+grant select, insert, update on public.agent_tokens to authenticated;
+
 revoke all on function public.agent_summary(text, boolean) from public;
 grant execute on function public.agent_summary(text, boolean) to anon, authenticated;
