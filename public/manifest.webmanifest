@@ -1,0 +1,17 @@
+{
+  "name": "身体课表",
+  "short_name": "身体课表",
+  "description": "把跟练视频和私教课排成一张周课表，顺手记饮食和体重。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fefcf6",
+  "theme_color": "#fefcf6",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
