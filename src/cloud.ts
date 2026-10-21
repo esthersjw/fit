@@ -27,7 +27,8 @@ export async function signUp(email: string, password: string): Promise<boolean> 
   return !!data.session
 }
 
-export const signOut = () => sb!.auth.signOut()
+// local scope: only this device, and works offline or if the account is already gone
+export const signOut = () => sb!.auth.signOut({ scope: 'local' })
 
 export async function pull(userId: string): Promise<{ data: AppData; updatedAt: number } | null> {
   const { data, error } = await sb!.from('user_data').select('data, updated_at').eq('user_id', userId).maybeSingle()
