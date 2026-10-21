@@ -39,8 +39,8 @@ export function Pill({ card }: { card: Card }) {
 
 /** Hand-drawn covers for coach classes, matched by keyword in the class name / coach / note. */
 const COACH_ART: [RegExp, string][] = [
-  [/网球|tennis/i, '/coach/tennis.jpg'],
-  [/泰拳|muay/i, '/coach/muaythai.jpg'],
+  [/网球|tennis/i, import.meta.env.BASE_URL + 'coach/tennis.jpg'],
+  [/泰拳|muay/i, import.meta.env.BASE_URL + 'coach/muaythai.jpg'],
 ]
 const coachArt = (c: Card) => COACH_ART.find(([re]) => re.test(`${c.title} ${c.coach ?? ''} ${c.note ?? ''}`))?.[1]
 
