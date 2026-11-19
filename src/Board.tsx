@@ -99,7 +99,6 @@ export function Board({ data, update }: { data: AppData; update: Update }) {
     <div className="week-nav">
       <button className="icon-btn" onClick={() => setStart(addDays(start, -7))} aria-label="上一周">‹</button>
       <div className="week-title">
-        <span className="hand-label">{start === weekStart(today) ? 'this week' : start < weekStart(today) ? 'past week' : 'next week'}</span>
         <strong>{md(week[0])} – {md(week[6])}</strong>
       </div>
       <button className="icon-btn" onClick={() => setStart(addDays(start, 7))} aria-label="下一周">›</button>
