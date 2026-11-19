@@ -56,7 +56,15 @@ export function AccountSheet({ open, onClose, cloud, data, update }: { open: boo
 
 /** Supabase / network errors → plain Chinese. */
 function friendly(e: unknown): string {
-  const m = e instanceof Error ? e.message : String(e)
+  // Supabase returns plain objects ({message, details, code}) for DB errors, not Error instances —
+  // String() on those yields "[object Object]", so pull the human message out first.
+  const raw =
+    e instanceof Error
+      ? e.message
+      : e && typeof e === 'object' && 'message' in e
+        ? String((e as { message: unknown }).message)
+        : String(e)
+  const m = raw || '未知错误'
   if (/failed to fetch|network|load failed/i.test(m)) return '连不上服务器，检查一下网络再试试。'
   if (/invalid login credentials/i.test(m)) return '邮箱或密码不对。'
   if (/already registered|already been registered/i.test(m)) return '这个邮箱已经注册过了，直接登录就好。'
