@@ -1,12 +1,16 @@
-import { createClient, type Session as AuthSession } from '@supabase/supabase-js'
+import type { Session as AuthSession, SupabaseClient } from '@supabase/supabase-js'
 import type { AppData } from './types'
 import type { Summary } from './summary'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
-/** null when the build has no Supabase config → the app quietly stays local-only. */
-export const sb = url && key ? createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } }) : null
+/**
+ * Local-only build: cloud sync / login / agent keys are intentionally disabled.
+ * The app stores everything in localStorage; backup & move happen via JSON export/import.
+ * Set this back to `url && key ? createClient(...) : null` to re-enable cloud.
+ */
+export const sb: SupabaseClient | null = null
 export const cloudEnabled = !!sb
 export const supabaseUrl = url ?? ''
 export const supabaseAnonKey = key ?? ''

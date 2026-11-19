@@ -15,7 +15,7 @@ const TABS = [
 type Tab = (typeof TABS)[number]['k']
 
 export default function App() {
-  const [data, update, cloud] = useData()
+  const [data, update] = useData()
   const [tab, setTab] = useState<Tab>('board')
   const [acct, setAcct] = useState(false)
   return (
@@ -25,9 +25,9 @@ export default function App() {
           身体课表<span className="hl-dot">.</span>
         </h1>
         <span className="tagline">move &amp; nourish</span>
-        <AccountButton cloud={cloud} onOpen={() => setAcct(true)} />
+        <AccountButton onOpen={() => setAcct(true)} />
       </header>
-      <AccountSheet open={acct} onClose={() => setAcct(false)} cloud={cloud} data={data} update={update} />
+      <AccountSheet open={acct} onClose={() => setAcct(false)} data={data} update={update} />
 
       <main className="app-content">
         {tab === 'board' && <Board data={data} update={update} />}
