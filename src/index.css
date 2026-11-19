@@ -448,6 +448,8 @@ body { background: var(--cream) radial-gradient(rgba(26, 26, 46, 0.055) 1px, tra
 .acct-me { font-weight: 700; word-break: break-all; }
 .acct-code { font-size: 1.4rem; letter-spacing: 0.4em; text-align: center; font-variant-numeric: tabular-nums; }
 .acct-err { font-size: 0.8rem; color: var(--red); }
+.acct-ok { font-size: 0.8rem; color: #3aa76d; }
+.acct-localnote { background: rgba(43, 127, 216, 0.06); border-radius: var(--wob-sm); padding: 8px 10px; }
 .acct-form { display: flex; flex-direction: column; gap: 10px; }
 .acct-tabs { margin: 0; padding: 0; }
 .acct-fresh { display: flex; flex-direction: column; gap: 8px; }

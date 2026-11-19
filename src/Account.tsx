@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AppData } from './types'
-import type { Cloud } from './store'
+import type { Cloud, Update } from './store'
 import { Sheet } from './ui'
 import { cloudEnabled, createKey, listKeys, revokeKey, signIn, signUp, supabaseAnonKey, supabaseUrl, type AgentKey } from './cloud'
+import { parseBackup } from './backup'
 import { buildSummary } from './summary'
 import { todayKey } from './date'
 
@@ -25,12 +26,17 @@ export function AccountButton({ cloud, onOpen }: { cloud: Cloud; onOpen: () => v
   )
 }
 
-export function AccountSheet({ open, onClose, cloud, data }: { open: boolean; onClose: () => void; cloud: Cloud; data: AppData }) {
+export function AccountSheet({ open, onClose, cloud, data, update }: { open: boolean; onClose: () => void; cloud: Cloud; data: AppData; update: Update }) {
   return (
     <Sheet open={open} onClose={onClose} title="账号与数据">
+      {!cloud.user && (
+        <p className="hint acct-localnote">
+          你的课表、饮食和体重<b>默认只保存在这台设备上</b>，不用登录也能用，记得偶尔「导出」备份一下。{cloudEnabled ? '登录只是可选项——用来在手机和电脑之间自动同步。' : ''}
+        </p>
+      )}
       {cloudEnabled && (cloud.user ? <SignedIn cloud={cloud} /> : <SignIn />)}
       {cloud.user && <AgentKeys />}
-      <Export data={data} />
+      <DataBox data={data} update={update} signedIn={!!cloud.user} />
       {cloud.user && (
         <button
           className="btn btn--ghost-red"
@@ -215,13 +221,30 @@ function download(name: string, text: string, type: string) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-function Export({ data }: { data: AppData }) {
+function DataBox({ data, update, signedIn }: { data: AppData; update: Update; signedIn: boolean }) {
   const day = todayKey()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  async function onPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-picking the same file
+    if (!file) return
+    if (!confirm('导入会用这份文件覆盖当前设备上的课表、饮食和体重记录（登录状态下也会覆盖云端）。确定吗？\n建议先点「完整数据 JSON」导出一个备份。')) return
+    try {
+      const parsed = parseBackup(await file.text())
+      update(() => parsed)
+      setMsg({ ok: true, text: `已导入 ${parsed.cards.length} 张卡片 · ${parsed.sessions.length} 节课${signedIn ? '，正在同步到云端…' : ''}` })
+    } catch (err) {
+      setMsg({ ok: false, text: friendly(err) })
+    }
+  }
+
   return (
     <div className="acct-box">
-      <span className="hand-label">export</span>
-      <p className="acct-title">导出我的数据</p>
-      <p className="hint">完整数据（JSON）适合备份和搬家；周报（Markdown）适合放进笔记，或者直接丢给 AI 看。</p>
+      <span className="hand-label">data</span>
+      <p className="acct-title">备份与搬家</p>
+      <p className="hint">完整数据（JSON）适合备份和换设备；导出后可以在任何设备用下面的「导入」还原。周报（Markdown）适合放进笔记，或直接丢给 AI 看。</p>
       <div className="sheet-actions">
         <button className="btn btn--ghost" onClick={() => download(`身体课表-${day}.json`, JSON.stringify({ exported_at: new Date().toISOString(), data }, null, 2), 'application/json')}>
           完整数据 JSON
@@ -230,6 +253,9 @@ function Export({ data }: { data: AppData }) {
           周报 Markdown
         </button>
       </div>
+      <button className="btn btn--blue" onClick={() => fileRef.current?.click()}>导入 JSON 备份</button>
+      <input ref={fileRef} type="file" accept="application/json,.json" onChange={onPick} hidden />
+      {msg && <p className={msg.ok ? 'acct-ok' : 'acct-err'}>{msg.text}</p>}
     </div>
   )
 }

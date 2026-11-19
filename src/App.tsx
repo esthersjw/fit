@@ -27,7 +27,7 @@ export default function App() {
         <span className="tagline">move &amp; nourish</span>
         <AccountButton cloud={cloud} onOpen={() => setAcct(true)} />
       </header>
-      <AccountSheet open={acct} onClose={() => setAcct(false)} cloud={cloud} data={data} />
+      <AccountSheet open={acct} onClose={() => setAcct(false)} cloud={cloud} data={data} update={update} />
 
       <main className="app-content">
         {tab === 'board' && <Board data={data} update={update} />}
