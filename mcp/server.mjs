@@ -9,10 +9,10 @@ const TOOLS = [
   {
     name: 'get_fitness_progress',
     description:
-      '读取用户在「身体课表」里的健身进度（只读）：本周和下周课表、完成情况、最近 4 周训练分钟数、体重 7 天平均趋势、最近 7 天手掌法饮食。返回一份 Markdown 周报和结构化 JSON。这些是事实记录，不是考核：不要催促或打分，体重只谈 7 天平均趋势。',
+      '读取用户在「身体课表」里的健身进度（只读）：本周和下周课表、完成情况、最近 4 周训练分钟数、体重 7 天平均趋势、最近 7 天手掌法饮食。返回一份 Markdown 周报和结构化 JSON。这些是事实记录，不是考核：不要催促或打分，体重只谈 7 天平均趋势。若返回“还没有同步过数据”，说明用户尚未在 app 登录同步，请提醒其先登录。',
     inputSchema: {
       type: 'object',
-      properties: { include_raw_data: { type: 'boolean', description: '同时返回完整原始数据（卡片库、所有课表、所有记录）。默认 false。' } },
+      properties: { include_data: { type: 'boolean', description: '同时返回完整原始数据（卡片库、所有课表、所有记录）。默认 false。' } },
     },
   },
 ]
@@ -41,7 +41,7 @@ async function handle(req) {
   if (method === 'tools/call') {
     if (params?.name !== 'get_fitness_progress') throw Object.assign(new Error(`unknown tool ${params?.name}`), { code: -32602 })
     try {
-      return { content: [{ type: 'text', text: await progress(params.arguments?.include_raw_data) }] }
+      return { content: [{ type: 'text', text: await progress(params.arguments?.include_data) }] }
     } catch (e) {
       return { content: [{ type: 'text', text: `读取失败：${e.message}` }], isError: true }
     }

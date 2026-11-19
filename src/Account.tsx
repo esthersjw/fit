@@ -146,16 +146,32 @@ function SignedIn({ cloud }: { cloud: Cloud }) {
 }
 
 function agentPrompt(token: string) {
-  return `你可以读取我的「身体课表」健身进度（只读）。
-调用方式：
-POST ${supabaseUrl}/rest/v1/rpc/agent_summary
-Headers: apikey: ${supabaseAnonKey}
-         Content-Type: application/json
-Body: {"token": "${token}"}
-（要完整原始数据时 Body 加 "include_data": true）
+  return `【身体课表 · 只读数据接入说明】
+你（AI）可以用下面这一个接口，「只读」地查看我的健身与饮食记录，用来帮我分析和陪伴。
+请把这些当成事实记录：不要催促、不要打分；聊体重只看 7 天平均趋势，别盯着单次数字。
 
-返回 JSON：summary.markdown 是人能直接读的周报；summary.this_week / next_week / last_4_weeks / weight / diet_last_7d 是结构化数据。
-这些是事实记录，不是考核：聊我的进度时别催、别打分，体重只看 7 天平均的趋势。`
+■ 怎么调用（需要你的运行环境能发 HTTP 请求，例如带代码执行/工具的 Agent）
+POST ${supabaseUrl}/rest/v1/rpc/agent_summary
+Headers:
+  apikey: ${supabaseAnonKey}
+  Content-Type: application/json
+Body:
+  {"token": "${token}", "include_data": false}
+  · 想看完整原始数据（所有卡片、课表、记录）时，把 include_data 改成 true。
+
+■ 返回结果怎么看
+  · summary 为 null：说明我还没在「身体课表」里同步过数据，请提醒我先去登录。
+  · summary.markdown：一份可直接读的人类周报，优先用它来回答我。
+  · summary.this_week / next_week / last_4_weeks：本周/下周课表与完成情况、最近 4 周训练量。
+  · summary.weight：体重（latest 最近一次、avg_7d 与 avg_7d_a_week_ago 两周 7 天均值、last_30d 明细）。
+  · summary.diet_last_7d：最近 7 天手掌法饮食（蛋白质掌 / 蔬菜拳 / 主食捧 / 油脂拇指 的份数）。
+  · include_data=true 时另有 data：完整原始数据。
+
+■ 关于这把钥匙
+  · 它只读、我随时可以作废；这是我的私密凭据，请不要原样回显给我，也不要写进任何公开内容或日志。
+
+（如果你用的是支持 MCP 的客户端，也可以改用本项目自带的 mcp/server.mjs：
+ 配置环境变量 FIT_SUPABASE_URL / FIT_SUPABASE_KEY / FIT_TOKEN，效果相同，且无需手写请求。）`
 }
 
 function AgentKeys() {
@@ -176,14 +192,18 @@ function AgentKeys() {
     <div className="acct-box">
       <span className="hand-label">agent</span>
       <p className="acct-title">连接我的 Agent</p>
-      <p className="hint">生成一把只读钥匙给你的 Agent，它就能查你的课表、完成情况、体重趋势和饮食记录，改不了任何东西。随时可以作废。</p>
+      <p className="hint">
+        让你的 AI 助手（ChatGPT / Claude / 通义 / QwenWork 等）<b>只读</b>地看你的健身记录，帮你分析。三步：
+        <br />① 点「生成一把钥匙」→ ② 点「复制粘贴给 AI 的说明」，整段贴给 AI → ③ 它就能读你的课表、完成情况、体重趋势、饮食来陪你聊。
+        <br />AI <b>改不了</b>任何东西，钥匙也随时能在下面作废。
+      </p>
       {fresh ? (
         <div className="acct-fresh">
-          <p className="hint">这把钥匙只显示这一次，先复制下来：</p>
+          <p className="hint">这把钥匙<b>只显示这一次</b>，先复制好；下面两个按钮，建议直接复制「粘贴给 AI 的说明」（已含钥匙和用法）。</p>
           <code className="acct-token">{fresh}</code>
           <div className="sheet-actions">
-            <button className="btn btn--ghost btn--sm" onClick={() => copy('key', fresh)}>{copied === 'key' ? '已复制 ✓' : '复制钥匙'}</button>
-            <button className="btn btn--yellow btn--sm" onClick={() => copy('prompt', agentPrompt(fresh))}>{copied === 'prompt' ? '已复制 ✓' : '复制给 Agent 的说明'}</button>
+            <button className="btn btn--ghost btn--sm" onClick={() => copy('key', fresh)}>{copied === 'key' ? '已复制 ✓' : '只复制钥匙'}</button>
+            <button className="btn btn--yellow btn--sm" onClick={() => copy('prompt', agentPrompt(fresh))}>{copied === 'prompt' ? '已复制 ✓' : '复制粘贴给 AI 的说明'}</button>
           </div>
           <button className="btn btn--ghost btn--sm" onClick={() => setFresh(null)}>好了，收起来</button>
         </div>
