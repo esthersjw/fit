@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AppData, Card, Category } from './types'
 import { CATEGORY, FOCUS, INTENSITY } from './types'
 import { recommended, type Update } from './store'
-import { fetchBiliMeta, guessTags, parseBiliInput } from './bili'
+import { fetchBiliMeta, guessTags, parseBiliInput, extractBvids } from './bili'
 import { uid } from './scheduler'
 import { CardEditor } from './CardEditor'
 import { Cover, Pill, Stars } from './ui'
@@ -51,6 +51,40 @@ export function Library({ data, update }: { data: AppData; update: Update }) {
     setEditing({ card: base, isNew: true })
   }
 
+  async function addMany() {
+    const ids = extractBvids(input)
+    if (!ids.length) return setMsg('没识别到 BV 号～把多个 B站 链接一行一个粘进来（含 BV 号即可）')
+    const have = new Set(live.map((c) => c.bvid))
+    const todo = ids.filter((b) => !have.has(b))
+    if (!todo.length) return setMsg('这些视频都已经在卡片库里啦')
+    setBusy(true)
+    const added: Card[] = []
+    const failed: string[] = []
+    for (let i = 0; i < todo.length; i++) {
+      const bvid = todo[i]
+      setMsg(`导入中… ${i + 1}/${todo.length}`)
+      const base: Card = { id: bvid, kind: 'video', bvid, url: `https://www.bilibili.com/video/${bvid}`, title: '', minutes: 20, stars: 2, ...guessTags('') }
+      try {
+        const m = await fetchBiliMeta(bvid)
+        Object.assign(base, { title: m.title, cover: m.cover, minutes: m.minutes, owner: m.owner }, guessTags(m.title))
+      } catch {
+        failed.push(bvid)
+      }
+      added.push(base)
+    }
+    update((d) => ({ ...d, cards: [...added, ...d.cards] }))
+    setBusy(false)
+    setInput('')
+    setMsg(`已导入 ${added.length} 个${failed.length ? ` · ${failed.length} 个没拉到信息，可点开手动填` : ''}`)
+  }
+
+  function clearAll() {
+    if (!live.length) return
+    if (!confirm(`把当前 ${live.length} 张卡片都删掉？\n以前的练习记录仍保留，可在最下面「已删除」里恢复。`)) return
+    update((d) => ({ ...d, cards: d.cards.map((c) => ({ ...c, archived: true })), sessions: d.sessions.filter((s) => s.done) }))
+    setMsg('已清空卡片库～现在可以批量导入你自己的课程了')
+  }
+
   const addCoach = () =>
     setEditing({
       card: { id: uid(), kind: 'coach', title: '私教课', category: 'strength', focus: ['full'], intensity: 2, minutes: 60, stars: 2 },
@@ -75,15 +109,18 @@ export function Library({ data, update }: { data: AppData; update: Update }) {
         <span className="hand-label">add a video</span>
         <textarea
           className="app-input"
-          rows={2}
+          rows={3}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="粘贴 B站 链接 / BV 号 / App 分享文字"
+          placeholder="粘贴 B站 链接 / BV 号 / App 分享文字（粘多个就一行一个，点「批量添加」）"
         />
         <div className="paste-actions">
           <button className="btn btn--ghost" onClick={addCoach}>＋ 私教课卡片</button>
           <button className="btn btn--yellow" disabled={busy || !input.trim()} onClick={addVideo}>
             {busy ? '读取中…' : '识别并添加'}
+          </button>
+          <button className="btn btn--blue" disabled={busy || !input.trim()} onClick={addMany}>
+            批量添加
           </button>
         </div>
         {msg && <p className="hint">{msg}</p>}
@@ -119,6 +156,12 @@ export function Library({ data, update }: { data: AppData; update: Update }) {
               {allRecs ? '收起' : `看全部 ${recs.length} 个`}
             </button>
           )}
+        </div>
+      )}
+
+      {live.length > 0 && (
+        <div className="lib-manage">
+          <button className="btn btn--ghost-red btn--sm" onClick={clearAll}>清空卡片库（{live.length}）</button>
         </div>
       )}
 

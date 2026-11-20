@@ -2,6 +2,11 @@ import type { Card, Category, Focus, Intensity } from './types'
 
 export interface Parsed { bvid?: string; url?: string; title?: string }
 
+/** Pull every distinct BV id out of a block of text (one per line, pasted list, share text, etc.). */
+export function extractBvids(text: string): string[] {
+  return [...new Set(text.match(/BV[0-9A-Za-z]{10}/g) ?? [])]
+}
+
 /** Accepts a bilibili URL, a bare BV id, or the app's share text "【标题-哔哩哔哩】 https://b23.tv/xxx". */
 export function parseBiliInput(text: string): Parsed {
   const bvid = text.match(/BV[0-9A-Za-z]{10}/)?.[0]

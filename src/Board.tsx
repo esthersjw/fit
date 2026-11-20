@@ -67,11 +67,19 @@ export function Board({ data, update }: { data: AppData; update: Update }) {
 
   const setSessions = (fn: (s: Session[]) => Session[]) => update((d) => ({ ...d, sessions: fn(d.sessions) }))
 
+  const isBusy = (date: string) => (data.busyDays ?? []).includes(fromKey(date).getDay())
+
   function auto() {
-    const restDays = week.filter((d) => data.feelings[d] === 'tired')
+    const restDays = week.filter((d) => data.feelings[d] === 'tired' || isBusy(d))
     setSessions((s) => autoSchedule({ cards: data.cards, sessions: s, week, today, daysPerWeek: data.daysPerWeek, restDays }))
-    flash('排好啦～手动拖过的、私教课和已完成的都没动')
+    flash('排好啦～手动拖过的、私教课、已完成的和你标「没空」的日子都没动')
   }
+
+  const toggleBusyDay = (idx: number) =>
+    update((d) => {
+      const cur = d.busyDays ?? []
+      return { ...d, busyDays: cur.includes(idx) ? cur.filter((x) => x !== idx) : [...cur, idx] }
+    })
 
   function onDragEnd(e: DragEndEvent) {
     setDragId(null)
@@ -104,15 +112,28 @@ export function Board({ data, update }: { data: AppData; update: Update }) {
       <button className="icon-btn" onClick={() => setStart(addDays(start, 7))} aria-label="下一周">›</button>
     </div>
   )
+  const DAY_ORDER: [number, string][] = [[1, '一'], [2, '二'], [3, '三'], [4, '四'], [5, '五'], [6, '六'], [0, '日']]
   const controls = (
-    <div className="auto-row">
-      <div className="stepper" aria-label="每周练几天">
-        <button onClick={() => update((d) => ({ ...d, daysPerWeek: Math.max(1, d.daysPerWeek - 1) }))}>－</button>
-        <span>每周 <b>{data.daysPerWeek}</b> 练</span>
-        <button onClick={() => update((d) => ({ ...d, daysPerWeek: Math.min(6, d.daysPerWeek + 1) }))}>＋</button>
+    <>
+      <div className="auto-row">
+        <div className="stepper" aria-label="每周练几天">
+          <button onClick={() => update((d) => ({ ...d, daysPerWeek: Math.max(1, d.daysPerWeek - 1) }))}>－</button>
+          <span>每周 <b>{data.daysPerWeek}</b> 练</span>
+          <button onClick={() => update((d) => ({ ...d, daysPerWeek: Math.min(6, d.daysPerWeek + 1) }))}>＋</button>
+        </div>
+        <button className="btn btn--blue" onClick={auto} disabled={week[6] < today}>✨ 自动排这周</button>
       </div>
-      <button className="btn btn--blue" onClick={auto} disabled={week[6] < today}>✨ 自动排这周</button>
-    </div>
+      <div className="avail" aria-label="每周哪几天有空">
+        <span className="avail-label">有空的日子（点掉没空的那天）</span>
+        <div className="avail-days">
+          {DAY_ORDER.map(([idx, lab]) => (
+            <button key={idx} className={`chip ${(data.busyDays ?? []).includes(idx) ? '' : 'chip--on'}`} onClick={() => toggleBusyDay(idx)}>
+              {lab}
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
   )
 
   return (

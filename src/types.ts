@@ -48,6 +48,8 @@ export interface AppData {
   weights: Record<string, number>
   feelings: Record<string, Feeling>
   daysPerWeek: number
+  /** weekdays (0=Sun..6=Sat) the person is generally busy — auto-schedule won't plan on them */
+  busyDays?: number[]
   seedVersion?: number
 }
 

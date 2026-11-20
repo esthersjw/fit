@@ -11,6 +11,7 @@ const initial = (): AppData => ({
   weights: {},
   feelings: {},
   daysPerWeek: 3,
+  busyDays: [],
   seedVersion: SEED_VERSION,
 })
 

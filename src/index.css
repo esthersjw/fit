@@ -128,6 +128,11 @@ a { color: var(--blue); }
 .stepper button { width: 36px; height: 36px; border-radius: 9px; font-size: 1rem; color: var(--blue); }
 .stepper button:active { background: var(--cream-dark); }
 .stepper b { color: var(--blue); font-size: 1rem; }
+.avail { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.avail-label { font-size: 0.75rem; color: var(--ink-faint); }
+.avail-days { display: flex; gap: 6px; flex-wrap: wrap; }
+.avail-days .chip { padding: 4px 12px; font-size: 0.82rem; min-width: 38px; }
+.lib-manage { display: flex; justify-content: flex-end; margin: 2px 0 6px; }
 
 .days { display: flex; flex-direction: column; gap: 10px; }
 .day { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 10px 12px 12px; transition: border-color 0.15s, background 0.15s; }
