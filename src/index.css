@@ -124,6 +124,7 @@ a { color: var(--blue); }
 .stat-bar i.stat-bar-plan { background: rgba(244, 215, 88, 0.35); }
 
 .auto-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.auto-btns { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .stepper { display: flex; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 3px; font-size: 0.85rem; }
 .stepper button { width: 36px; height: 36px; border-radius: 9px; font-size: 1rem; color: var(--blue); }
 .stepper button:active { background: var(--cream-dark); }

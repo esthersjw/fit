@@ -81,6 +81,13 @@ export function Board({ data, update }: { data: AppData; update: Update }) {
       return { ...d, busyDays: cur.includes(idx) ? cur.filter((x) => x !== idx) : [...cur, idx] }
     })
 
+  function clearWeek() {
+    if (!inWeek.some((s) => !s.done)) return flash('这周没有可清的课～')
+    if (!confirm('清除本周所有还没练的课？（含手动拖过的；已练完的记录会保留）')) return
+    setSessions((list) => list.filter((s) => !(week.includes(s.date) && !s.done)))
+    flash('这周清空啦～可以重新「自动排这周」了')
+  }
+
   function onDragEnd(e: DragEndEvent) {
     setDragId(null)
     const to = e.over?.id as string | undefined
@@ -121,7 +128,10 @@ export function Board({ data, update }: { data: AppData; update: Update }) {
           <span>每周 <b>{data.daysPerWeek}</b> 练</span>
           <button onClick={() => update((d) => ({ ...d, daysPerWeek: Math.min(6, d.daysPerWeek + 1) }))}>＋</button>
         </div>
-        <button className="btn btn--blue" onClick={auto} disabled={week[6] < today}>✨ 自动排这周</button>
+        <div className="auto-btns">
+          <button className="btn btn--blue" onClick={auto} disabled={week[6] < today}>✨ 自动排这周</button>
+          <button className="btn btn--ghost-red btn--sm" onClick={clearWeek}>清除本周</button>
+        </div>
       </div>
       <div className="avail" aria-label="每周哪几天有空">
         <span className="avail-label">有空的日子（点掉没空的那天）</span>
